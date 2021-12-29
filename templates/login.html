@@ -1,0 +1,16 @@
+﻿{% extends "base.html" %}
+
+{% block tab_title %}HotZone - Login{% endblock %}
+
+{% block page_title %}HotZone Login{% endblock %}
+
+{% block content %}
+<form method="post" action="/login/">
+  {% csrf_token %}
+  {{ form }}
+  {% if request.GET.next %}
+    <input type="hidden" name="next" value={{request.GET.next}}>
+  {% endif %}
+  <br><button id="login_submit" class="tool login_button" type="submit">Login</button>
+</form>
+{% endblock %}

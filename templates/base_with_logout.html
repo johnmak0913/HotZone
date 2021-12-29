@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block logout_button %}
+<script type="text/javascript">
+    function logout() {
+        var req = new XMLHttpRequest();
+        var url = "{% url 'logout' %}";
+        req.open("get", url, false);
+        req.send();
+        if (req.status != 200) {
+            alert("Logout failed!\nStatus code: " + req.status);
+        } else {
+            alert("Logout successful.");
+            window.location.replace("{% url 'login' %}");
+        }
+    }
+</script>
+
+<div class="tab">
+    <a href="{% url 'view_cases' %}">
+        <div class="tab_button {% block records_tab %}{% endblock %}">
+            Records
+        </div>
+    </a>
+
+    <a href="{% url 'view_clusters' %}">
+        <div class="tab_button {% block clusters_tab %}{% endblock %}" style="float: right;">
+            Clusters
+        </div>
+</div>
+</a>
+
+<a onClick="logout()">
+    <div class="tool logout_button" style="cursor: pointer;">
+        Logout
+    </div>
+</a>
+{% endblock %}

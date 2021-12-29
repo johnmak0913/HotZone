@@ -1,0 +1,242 @@
+{% extends "base_with_logout.html" %}
+
+{% block records_tab %}tab_button_highlight{% endblock %}
+
+{% block tab_title %}HotZone - Add Visit{% endblock %}
+
+{% block page_title %}Add visit record to case {{ caseNo }}{% endblock %}
+
+{% block back_button %}
+
+<a href="{% url 'case_details' caseNo %}">
+    <div class="tool back_button">
+        &#x2190; Back 
+    </div>
+</a>
+
+<span style="font-style: italic; margin-left: 10px;">Hotzone Records / Case Detail (#{{ caseNo }}) / Add Visit</span>
+
+{% endblock %}
+
+{% block content %}
+
+<script type="text/javascript">
+    function is_numeric(str) {
+        return /^\d+$/.test(str);
+    }
+
+    function validateForm() {
+      var category = document.forms["visitForm"]["category-choice"].value;
+      var location = document.forms["visitForm"]["location"].value;
+      var dateFrom = document.forms["visitForm"]["datefrom"].value;
+      var dateTo = document.forms["visitForm"]["dateto"].value;
+      document.getElementById('datefrom').style.borderColor = "transparent";
+      document.getElementById('dateto').style.borderColor = "transparent";
+      document.getElementById('category-choice').style.borderColor = "transparent";
+      document.getElementById('location').style.borderColor = "transparent";
+      var valid = true;
+      var message = "";
+      if (dateFrom == "") {
+        message = message + "Please input date from\n";
+        document.getElementById('datefrom').style.borderColor = "red";
+        valid = false;
+      } else if (dateFrom.length != 10 || dateFrom[4] != '-' || dateFrom[7] != '-' || !is_numeric(dateFrom.substring(0, 4)) || !is_numeric(dateFrom.substring(5, 7)) || !is_numeric(dateFrom.substring(8, 10))) {
+        message = message + "Please input date from in the format of YYYY-MM-DD\n";
+        document.getElementById('datefrom').style.borderColor = "red";
+        valid = false;
+      }
+      if (dateTo == "") {
+        message = message + "Please input date to\n";
+        document.getElementById('dateto').style.borderColor = "red";
+        valid = false;
+      } else if (dateTo.length != 10 || dateTo[4] != '-' || dateTo[7] != '-' || !is_numeric(dateTo.substring(0, 4)) || !is_numeric(dateTo.substring(5, 7)) || !is_numeric(dateTo.substring(8, 10))) {
+        message = message + "Please input date to in the format of YYYY-MM-DD\n";
+        document.getElementById('dateto').style.borderColor = "red";
+        valid = false;
+      }
+      if (category == "") {
+        message  = message + "Category must be filled out\n";
+        document.getElementById('category-choice').style.borderColor = "red";
+        valid = false;
+      }
+      if (location == "") {
+        message = message + "Location must be filled out\n";
+        document.getElementById('location').style.borderColor = "red";
+        valid = false;
+      }
+      if (dateFrom > dateTo && dateTo != " "&& dateFrom != " ") {
+        message = message + "Date from must be earlier than date to\n";
+        document.getElementById('datefrom').style.borderColor = "red";
+        document.getElementById('dateto').style.borderColor = "red";
+        valid = false;
+      }
+      if (valid==false) {
+          alert(message);
+          return false;
+      }
+    }
+
+    function addVisit(caseNo, dateFrom, dateTo, category, fromGeoData, locationName, locationAddress, locationX, locationY) {
+        dateFrom = document.getElementById("datefrom").value
+        dateTo = document.getElementById("dateto").value
+        category = document.getElementById("category-choice").value
+
+        if(!confirm("Are you sure you want to create the following visit record?\n" +
+            "Date from: " + dateFrom + "\n" +
+            "Date to: " + dateTo + "\n" +
+            "Category: " + category + "\n" +
+            "Location: " + locationName + "\n" +
+            "Address: " + locationAddress + "\n" +
+            "Coordinates: (" + locationX + ", " + locationY + ")")) {
+            return;
+        }
+
+        if(fromGeoData) {
+            var req = new XMLHttpRequest();
+            var url = "{% url 'save_geodata' %}" + "?name=" + encodeURIComponent(locationName) + "&address=" + encodeURIComponent(locationAddress) + "&x=" + locationX + "&y=" + locationY;
+            req.open("get", url, false);
+            req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+            req.send();
+            if(req.status != 200) {
+                alert("Failed to add location to database.");
+                return;
+            }
+        }
+
+        var req = new XMLHttpRequest();
+        var url = "{% url 'query_locdb' %}" + "?name=" + encodeURIComponent(locationName) + "&address=" + encodeURIComponent(locationAddress) + "&x=" + locationX + "&y=" + locationY;
+        req.open("get", url, false);
+        req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+        req.send();
+        if(req.status != 200) {
+            alert("Failed search location in database.");
+            return;
+        }
+        var location_id = req.responseText;
+        var req = new XMLHttpRequest();
+        var url = "{% url 'save_visit' %}" + "?caseNo=" + caseNo + "&dateFrom=" + dateFrom + "&dateTo=" + dateTo + "&category=" + category + "&locationId=" + location_id;
+        req.open("get", url, false);
+        req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+        req.send();
+        if(req.status == 200) {
+            alert("Succesfully saved visit record.");
+            window.location.replace("{% url 'add_visit_record' %}?caseNo="+caseNo);
+        } else {
+            alert("Failed to save visit record.");
+        }
+    }
+</script>
+
+<h2>Visit Information:</h2>
+<form name="visitForm" class="visitForm" action="{% url 'add_visit_record' %}" method="GET" onsubmit="return validateForm()">
+    {% csrf_token %}
+    <input type="hidden" id="caseNo" name="caseNo" value="{{caseNo}}">
+    <label for="datefrom">Date From:</label>
+    <input type="date" id="datefrom" name="datefrom" value="{{datefrom}}"><br>
+    <label for="dateto">Date To:</label>
+    <input type="date" id="dateto" name="dateto" value="{{dateto}}"><br>
+    <label for="category-choice">Category:</label>
+    <input list="category-list" id="category-choice" name="category-choice" value="{{category}}"/><br>
+    <datalist id="category-list">
+        <option value="Residence">
+        <option value="Workplace">
+        <option value="Visit">
+    </datalist>
+    <label for="location">Location:</label>
+    <input type="text" id="location" name="location" value="{{location}}">
+    <input type="submit" class="tool search_button" style="margin:0px; height: 25px; margin-left: 10px;" value="Search">
+</form>
+
+{% if location %}
+    <br><h3>Locations matching "{{ location }}" from HotZone application database:</h3>
+    {% if not query_from_app_db_empty %}
+    <table>
+        <tr style="border: 1px solid #dddddd;">
+            <th>
+                Name
+            </th>
+            <th>
+                Address
+            </th>
+            <th>
+                x-Coordinate
+            </th>
+            <th>
+                y-Coordinate
+            </th>
+            <th>
+            </th>
+        </tr>
+        {% for result in results_from_app_db %}
+        <tr class="table_row">
+            <td>
+                {{ result.name }}
+            </td>
+            <td>
+                {{ result.address }}
+            </td>
+            <td>
+                {{ result.x }}
+            </td>
+            <td>
+                {{ result.y }}
+            </td>
+            <td>
+                <a onClick="addVisit('{{caseNo}}', '{{datefrom}}', '{{dateto}}', '{{category}}', false, '{{result.name}}', '{{result.address}}', '{{result.x}}', '{{result.y}}')" style="text-decoration: underline; cursor: pointer;">Select</a>
+            </td>
+        </tr>
+        {% empty %}
+        <h4>Location "{{ location }}" is not found in HotZone database.</h4>
+        {%endfor%}
+    </table>
+    {% else %}
+    <h4>Location "{{ location }}" is not found in HotZone database.</h4>
+    {% endif %}
+
+    <h3>Locations matching "{{ location }}" from GeoData:</h3>
+    {% if not query_from_geodata_empty %}
+    <table>
+        <tr style="border: 1px solid #dddddd;">
+            <th>
+                Name
+            </th>
+            <th>
+                Address
+            </th>
+            <th>
+                x-Coordinate
+            </th>
+            <th>
+                y-Coordinate
+            </th>
+            <th>
+            </th>
+        </tr>
+        {% for result in results_from_geodata %}
+        <tr class="table_row">
+            <td>
+                {{ result.name }}
+            </td>
+            <td>
+                {{ result.address }}
+            </td>
+            <td>
+                {{ result.x }}
+            </td>
+            <td>
+                {{ result.y }}
+            </td>
+            <td>
+                <a onClick="addVisit('{{caseNo}}', '{{datefrom}}', '{{dateto}}', '{{category}}', true, '{{result.nameEN}}', '{{result.addressEN}}', '{{result.x}}', '{{result.y}}')" style="text-decoration: underline; cursor: pointer;">Select</a>
+            </td>
+        </tr>
+        {% empty %}
+        <h4>Location "{{ location }}" is not found in GeoData.</h4>
+        {%endfor%}
+    </table>
+    {% else %}
+    <h4>Location "{{ location }}" is not found in GeoData.</h4>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

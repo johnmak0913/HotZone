@@ -1,0 +1,105 @@
+{% extends "base_with_logout.html" %}
+
+{% block clusters_tab %}tab_button_highlight{% endblock %}
+
+{% block tab_title %}HotZone - View Clusters{% endblock %}
+
+{% block page_title %}
+
+View Clusters
+
+{% endblock %}
+
+{% block content %}
+
+<script type="text/javascript">
+    function isNumeric(val) {
+        return val != "NaN" && Number(parseInt(val)) == val;
+    }
+
+    function validateForm() {
+        var D = document.forms["clusterForm"]["D"].value;
+        var T = document.forms["clusterForm"]["T"].value;
+        var C = document.forms["clusterForm"]["C"].value;
+        if(!isNumeric(D) || !isNumeric(T) || !isNumeric(C)) {
+            alert("Parameters must be numeric.");
+            return false;
+        }
+        if(D <= 0) {
+            alert("D must be positive.");
+            return false;
+        }
+        if(T <= 0) {
+            alert("T must be positive.");
+            return false;
+        }
+        if(C < 2) {
+            alert("The minimum value of C is 2.");
+            return false;
+        }
+        return true;
+    }
+</script>
+
+<h2>Cluster Parameters:</h2>
+<form name="clusterForm" class="clusterForm" action="{% url 'view_clusters' %}" method="GET" onsubmit="return validateForm()">
+    <label for="D">Inter-location distance threshold:</label>
+    <input type="text" id="D" name="D" value="{{ D }}">
+    <label class="leftLabel">meters</label>
+    <br>
+
+    <label for="T">Proximity in time threshold:</label>
+    <input type="text" id="T" name="T" value="{{ T }}">
+    <label class="leftLabel">days</label>
+    <br>
+
+    <label for="C">Minimum cluster size:</label>
+    <input type="text" id="C" name="C" value="{{ C }}">
+    <label class="leftLabel">cases</label>
+    <br>
+
+    <input type="submit" class="tool" id="cluster_button" value="View Clusters">
+</form>
+
+<br>
+
+{% if result %}
+<h2>Results:</h2>
+
+{% for cluster in clusters %}
+    <table>
+        <tr>
+            <th>Cluster #{{ cluster.no|add:"1" }}</th>
+        </tr>
+        <tr>
+            <th>Location</th>
+            <th>X</th>
+            <th>Y</th>
+            <th>Date</th>
+            <th>Case No.</th>
+        </tr>
+        {% for visit in cluster.visits %}
+        <tr>
+            <td>{{ visit.location }}</td>
+            <td>{{ visit.x }}</td>
+            <td>{{ visit.y }}</td>
+            <td>{{ visit.date }}</td>
+            <td>{{ visit.caseno }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% empty %}
+<h2>No cluster is identified.</h2>
+{% endfor %}
+
+{% if unclustered > 0 %}
+    {% if unclustered == 1 %}
+        <p>{{ unclustered }} visit is not clustered.</p>
+    {% else %}
+        <p>{{ unclustered }} visits are not clustered.</p>
+    {% endif %}
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

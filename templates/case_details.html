@@ -1,0 +1,154 @@
+{% extends "base_with_logout.html" %}
+
+{% block records_tab %}tab_button_highlight{% endblock %}
+
+{% block tab_title %}HotZone - Case Detail{% endblock %}
+
+{% block page_title %}Details of case {{ case.num }}{% endblock %}
+
+{% block back_button %}
+
+<a href="{% url 'view_cases' %}">
+    <div class="tool back_button">
+        &#x2190; Back
+    </div>
+</a>
+
+<span style="font-style: italic; margin-left: 10px;">Hotzone Records / Case Detail (#{{ case.num }})</span>
+
+{% endblock %}
+
+{% block content %}
+
+<table>
+    <tr style="border: 1px solid #dddddd;">
+        <th>
+            Case Number
+        </th>
+        <th>
+            Date Confirmed
+        </th>
+        <th>
+            Local/Imported
+        </th>
+    </tr>
+    <tr>
+        <td>
+            {{case.num}}
+        </td>
+        <td>
+            {{case.confirmed_date}}
+        </td>
+        <td>
+            {%if case.is_local%}
+            Local
+            {% else %}
+            Imported
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th>
+            Patient Name
+        </th>
+        <th>
+            Identity Document Number
+        </th>
+        <th>
+            Date of Birth
+        </th>
+    </tr>
+    <tr>
+        <td>
+            {{case.patient.name}}
+        </td>
+        <td>
+            {{case.patient.identity_number}}
+        </td>
+        <td>
+            {{case.patient.date_of_birth}}
+        </td>
+    </tr>
+    <tr>
+        <th>
+            Virus Name
+        </th>
+        <th>
+            Disease
+        </th>
+        <th>
+            Max.Infectious Period(days)
+        </th>
+    </tr>
+    <tr>
+        <td>
+            {{case.virus.name}}
+        </td>
+        <td>
+            {{case.virus.common_name}}
+        </td>
+        <td>
+            {{case.virus.max_infectious_period}}
+        </td>
+    </tr>
+</table>
+<h2>Visits</h2>
+<table>
+    <tr style="border: 1px solid #dddddd;">
+        <th>
+            Location
+        </th>
+        <th>
+            Address
+        </th>
+        <th>
+            X Coord
+        </th>
+        <th>
+            Y Coord
+        </th>
+        <th>
+            Date From
+        </th>
+        <th>
+            Date To
+        </th>
+        <th>
+            Category
+        </th>
+    </tr>
+    {% for visit in visits %}
+    <tr class="table_row">
+        <td>
+            {{visit.location.name}}
+        </td>
+        <td>
+            {{visit.location.address}}
+        </td>
+        <td>
+            {{visit.location.x_coord}}
+        </td>
+        <td>
+            {{visit.location.y_coord}}
+        </td>
+        <td>
+            {{visit.date_from}}
+        </td>
+        <td>
+            {{visit.date_to}}
+        </td>
+        <td>
+            {{visit.category}}
+        </td>
+    </tr>
+    {% empty %}
+    <h3>No visit record yet.</h3>
+    {%endfor%}
+</table>
+<a href="{% url 'add_visit_record' %}?caseNo={{case.num}}">
+    <div class="tool add_visit_button">
+        + Add new visit
+    </div>
+</a>
+
+{% endblock %}

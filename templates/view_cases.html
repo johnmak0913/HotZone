@@ -1,0 +1,89 @@
+{% extends "base_with_logout.html" %}
+
+{% block records_tab %}tab_button_highlight{% endblock %}
+
+{% block tab_title %}HotZone - Case Records{% endblock %}
+
+{% block page_title %}
+
+Case Records
+
+{% endblock %}
+
+{% block back_button %}
+
+{% if request.GET.search_query %}
+<a href="{% url 'view_cases' %}">
+    <div class="tool back_button">
+        &#x2190; Back
+    </div>
+</a>
+<span style="font-style: italic; margin-left: 10px;">Hotzone Records / Search Records (Filter: {{request.GET.search_query}}))</span>
+{% endif %}
+
+{% endblock %}
+
+{% block content %}
+
+<form action="{% url 'view_cases' %}" class="search" method="get">
+    <input type="text" name="search_query" value="{{request.GET.search_query}}"
+        placeholder="Search by HKID or case number..." style="height: 20px; width: 500px;" required>
+    <input class="tool search_button" type="submit" value="&#x2315; Search">
+</form>
+
+<table>
+    <tr style="border: 1px solid #dddddd;">
+        <th>
+            Case Number
+        </th>
+        <th>
+            Date Confirmed
+        </th>
+        <th>
+            Local/Imported
+        </th>
+        <th>
+            Patient Name
+        </th>
+        <th>
+            Virus
+        </th>
+        <th>
+        </th>
+    </tr>
+    {% for case in case_list %}
+    <tr class="table_row">
+        <td>
+            {{case.num}}
+        </td>
+        <td>
+            {{case.confirmed_date}}
+        </td>
+        <td>
+            {%if case.is_local%}
+            Local
+            {% else %}
+            Imported
+            {% endif %}
+        </td>
+        <td>
+            {{case.patient.name}}
+        </td>
+        <td>
+            {{case.virus.name}}
+        </td>
+        <td>
+            <a href="{% url 'case_details' case.num %}">
+                Details
+            </a>
+        </td>
+    </tr>
+    {% empty %}
+    {% if case_list.empty_query_result %}
+    <h1>No matching results.</h1>
+    {% else %}
+    <h1>The list is currently empty! Use the button above to add a new one.</h1>
+    {% endif %}
+    {%endfor%}
+</table>
+{% endblock %}

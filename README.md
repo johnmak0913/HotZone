@@ -12,3 +12,9 @@ The application aims at providing the staff in the Centre for Health Protection 
 ## Demo Pics
 <img src="hotzone_config\static/add-location.png" width=750 />
 <img src="hotzone_config\static/cluster.png" width=750 />
+
+## Credits
+Co-developed with
+[YauHerman](https://github.com/YauHerman),
+[BrettDong](https://github.com/BrettDong) and
+[yyuezhi](https://github.com/yyuezhi).

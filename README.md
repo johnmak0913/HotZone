@@ -10,3 +10,7 @@ URL: https://thawing-shore-42360.herokuapp.com
 Username: chpstaff001
 
 Password: demouser001
+
+## Demo Pics
+<img src="hotzone_config\static/add-location.png" width=750 />
+<img src="hotzone_config\static/cluster.png" width=750 />
